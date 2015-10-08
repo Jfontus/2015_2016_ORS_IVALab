@@ -2,6 +2,10 @@
 
 import rospy
 from sensor_msgs.msg import LaserScan
+import math
+import pdb
+import os
+import sys
 
 class Scan_msg:
 
@@ -10,19 +14,23 @@ class Scan_msg:
 	self.small_data = 0
 	self.point_data = 0
 
-    def sort(self, laserscan):
-	data = laserscan.ranges
-	small_data = data[314:324]
-	length = len(small_data)
-	for entry in range(0,length):
-	    if isnumeric(small_data[entry]) :
-	       a = 0
-	    else :
-	        del small_data[entry]
 
-	point_data = float(sum(small_data))/length(small_data)
-	print small_data
-#	rospy.loginfo("Avg of The DATA " + str(point_data))
+    def sort(self, laserscan):
+        #pdb.set_trace()
+	data = laserscan.ranges
+	small_data = list(data[314:324])
+	length = len(small_data)
+        #print length
+	for entry in range(0,length-1):
+            #print small_data[entry]
+	    if math.isnan(float(small_data[entry])) :
+	       del small_data[entry]
+	    else :
+	        a = 0
+        #pdb.set_trace()
+	point_data = float(sum(small_data))/len(small_data)
+	#print point_data
+	rospy.loginfo("Avg of The DATA " + str(point_data))
 
     def for_callback(self,laserscan):
 	self.sort(laserscan)
