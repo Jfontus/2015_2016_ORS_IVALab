@@ -16,13 +16,6 @@ import sys
 
 # STEP 3: RUN THE CODE
 
-import rospy
-from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist
-import math
-import pdb
-import os
-import sys
 
 class Scan_msg:
 
