@@ -28,9 +28,9 @@ class Scan_msg:
 	self.msg.linear.x = 0 # Sets the velocity of the robot
 	self.point_data = 0 # Stores laserscan data
         self.dist_setter = 1 # Sets the desired robot distance
-        self.error = 0 # Stores the desired distance error
-        self.max_forward = 0.5 # Sets the maximum forward velocity
-        self.max_backward = -0.5 # Sets the maximum backwards velocity
+	self.k = .5 #proportionality constant
+        self.max = 0.5 # Sets the maximum velocity
+
 
     def sort(self, laserscan): # Processes the Kinetic's laserscan data
         #pdb.set_trace()
@@ -42,32 +42,18 @@ class Scan_msg:
         rospy.loginfo("avg: " + str(self.point_data))
 
     def movement(self, pointdata): # Responsible for setting the velocity of the robot
-
- 	if (pointdata - self.dist_setter) < 0 :
-	    self.error = pointdata - self.dist_setter
-            self.movement_sat(self.error)
-
-	elif (pointdata - self.dist_setter) > 0 :
-	    self.error = pointdata - self.dist_setter
-            self.movement_sat(self.error)
-
-        else:
-	    self.msg.linear.x = 0
-	self.pub.publish(self.msg)
-
-    def movement_sat(self,error): # Prevents the robot from moving at a dangerous velocity
-
-	if error > 0: #Moving forward saturation control
-            if error < self.max_forward:
-               self.msg.linear.x = error
-            else:
-               self.msg.linear.x = self.max_forward
-        elif error < 0: # Moving backwards Saturation Control
-            if error > self.max_backward:
-               self.msg.linear.x = error
-            else:
-               self.msg.linear.x = self.max_backward
-
+	    error = pointdata - self.dist_setter
+	    #deadzone		
+ 	    if abs(error) < .01 :
+	       error = 0
+	    u = error*self.k	
+	    if u > self.max :
+	       self.msg.linear.x = self.max
+	    elif u < -self.max :
+		 self.msg.linear.x = -self.max
+	    else :
+		self.msg.linear.x = u
+	    self.pub.publish(self.msg)   	
 	
     def for_callback(self,laserscan): # Loops through the laserscan data and the movement data
 
@@ -97,3 +83,4 @@ if __name__ == "__main__":
     function is run''' 
     sub_obj = Scan_msg()
     listener()
+ 
