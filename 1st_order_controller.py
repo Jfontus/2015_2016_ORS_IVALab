@@ -15,6 +15,7 @@ import math
 import pdb
 import os
 import sys
+import numpy as np
 
 class Scan_msg:
 
@@ -34,22 +35,11 @@ class Scan_msg:
     def sort(self, laserscan): # Processes the Kinetic's laserscan data
         #pdb.set_trace()
 	data = laserscan.ranges
-	small_data = list(data[314:324])
-	entry = 0
-        #print length
-	while entry<len(small_data):
-            #print small_data[entry]
-	    if math.isnan(float(small_data[entry])) :
-	       del small_data[entry]
-	    else :
-	        entry+=1
-        #pdb.set_trace()
-	if len(small_data)!= 0:
-	   self.point_data = float(sum(small_data))/len(small_data)
-	else :
-	    print "NOT READING"	
-	#print point_data
-	rospy.loginfo("avg: " + str(self.point_data))
+	small_data = np.array(list(data[314:324]))
+        # Calculates the average while ignoring Nan values using numpy 
+        # library
+        self.point_data = small_data[~np.isnan(small_data)].mean()
+        rospy.loginfo("avg: " + str(self.point_data))
 
     def movement(self, pointdata): # Responsible for setting the velocity of the robot
 
