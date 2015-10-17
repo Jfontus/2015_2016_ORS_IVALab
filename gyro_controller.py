@@ -1,13 +1,5 @@
 #!/usr/bin/env python
 
-### GETTING THE CODE TO WORK ####
-
-# STEP 1: ENTER "roslaunch turtlebot_bringup minimal.launch" in a separate terminal window (turns on turtlebot)
-
-# STEP 2: ENTER "roslaunch turtlebot_navigation gmapping_demo.launch" in another separate terminal window (activates Laserscan device)
-
-# STEP 3: RUN THE CODE
-
 import roslib
 import rospy
 from nav_msgs.msg import Odometry
@@ -26,27 +18,35 @@ class Bump_msg:
 	self.pub = rospy.Publisher('/cmd_vel_mux/input/navi',Twist)
 	self.msg = Twist()
       	self.msg.angular.z = 0
-	self.msg.linear.x = 0 # Sets the velocity of the robot
-	self.state = 0
+	self.msg.linear.x = 0 
+	self.theta_err = 0
+	self.heading = 0  #desired heading in degrees
+	self.k = .5  #proportionality constant
+	self.saturation = .5
 
 
-    def sort(self, data): # Processes the Kinetic's laserscan data
-        a = data.pose.pose.orientation.w
-	b = data.pose.pose.orientation.z
-	z = complex(a,b)
-	z = z*z
-	print cmath.phase(z)
+    def sort(self, data): # Processes the gyro's data
+	z = complex(data.pose.pose.orientation.w, data.pose.pose.orientation.z)
+	z_curr = z*z
+	self.theta_err = math.radians(self.heading) - cmath.phase(z_curr)
 
-        #rospy.loginfo("Button state: " + str(self.state))
-
-    def movement(self): # Responsible for setting the velocity of the robot	
-	    self.pub.publish(self.msg) 
-	    print "publishing"	  	
-	
+    def movement(self, error): # Responsible for setting the velocity of the robot
+        #deadzone
+        if abs(error) < .01 :
+        	error = 0
+        u = k*error
+        if u > self.saturation :
+           self.msg.angular.z = self.saturation
+        elif u < -self.saturation
+             self.msg.angular.z = -self.saturation
+        else
+            self.msg.angular.z = u
+	self.pub.publish(self.msg) 
+	 
     def for_callback(self,data): # Loops through the laserscan data and the movement data
 
 	self.sort(data)
-        self.movement()
+        self.movement(self.theta_err)
 
 #################################################################
 
@@ -67,8 +67,8 @@ def listener():
 ################################
 
 if __name__ == "__main__":
-    '''A Scan_msg class object called sub_obj is created and listener
+    '''An Odo_msg class object called sub_obj is created and listener
     function is run''' 
-    sub_obj = Bump_msg()
+    sub_obj = Odo_msg()
     listener()
  
