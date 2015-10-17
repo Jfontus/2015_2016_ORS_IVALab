@@ -29,31 +29,28 @@ class Odo_msg:
 	z = complex(data.pose.pose.orientation.w, data.pose.pose.orientation.z)
 	z_curr = z*z
 	self.theta_err = math.radians(self.heading) - cmath.phase(z_curr)
+	rospy.loginfo("theta_err = " + str(self.theta_err))
 
-    def movement(self, error): # Responsible for setting the velocity of the robot
+    def movement(self, error): # Set the velocity of the robot
         #deadzone
         if abs(error) < .01 :
         	error = 0
         u = k*error
         if u > self.saturation :
            self.msg.angular.z = self.saturation
-        elif u < -self.saturation
+        elif u < -self.saturation :
              self.msg.angular.z = -self.saturation
-        else
+        else :
             self.msg.angular.z = u
 	self.pub.publish(self.msg) 
 	 
-    def for_callback(self,data): # Loops through the laserscan data and the movement data
-
+    def for_callback(self,data):
 	self.sort(data)
         self.movement(self.theta_err)
 
-#################################################################
-
 def call_back(odomsg):
-    '''Passes laser scan message to for_callback function of sub_obj.
-
-    Parameter scanmsg is laserscan message.'''
+    '''Passes Odometry message to for_callback function of sub_obj.
+    Parameter odomsg is Odometry message.'''
     sub_obj.for_callback(odomsg)
 
 def listener():
@@ -63,8 +60,6 @@ def listener():
     rospy.loginfo("Subscriber Starting")
     sub = rospy.Subscriber("/odom", Odometry, call_back)
     rospy.spin()
-
-################################
 
 if __name__ == "__main__":
     '''An Odo_msg class object called sub_obj is created and listener
