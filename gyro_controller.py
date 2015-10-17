@@ -10,7 +10,7 @@ import pdb
 import os
 import sys
 
-class Bump_msg:
+class Odo_msg:
 
     def __init__(self):
 	'''Initializes an object of this class.
