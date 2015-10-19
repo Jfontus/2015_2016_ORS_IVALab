@@ -35,7 +35,7 @@ class Odo_msg:
         #deadzone
         if abs(error) < .01 :
         	error = 0
-        u = k*error
+        u = self.k*error
         if u > self.saturation :
            self.msg.angular.z = self.saturation
         elif u < -self.saturation :
