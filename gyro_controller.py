@@ -5,10 +5,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 import math
 import cmath
-import roslib
-import pdb
-import os
-import sys
+
 
 class Odo_msg:
 
@@ -20,20 +17,24 @@ class Odo_msg:
       	self.msg.angular.z = 0
 	self.msg.linear.x = 0 
 	self.theta_err = 0
-	self.heading = 0  #desired heading in degrees
+	self.heading = 150  #desired heading in degrees
 	self.k = .5  #proportionality constant
-	self.saturation = .5
+	self.saturation = 1
 
 
-    def sort(self, data): # Processes the gyro's data
-	z = complex(data.pose.pose.orientation.w, data.pose.pose.orientation.z)
-	z_curr = z*z
-	self.theta_err = math.radians(self.heading) - cmath.phase(z_curr)
+    def sort(self, data):
+	'''Processes gyro's data.
+	Complex number is created from quaternion and angle is corrected'''
+	z = complex(data.pose.pose.orientation.w, data.pose.pose.orientation.z) #constructs complex number from quaternion
+	z_curr = z*z #angle must be doubled
+	self.theta_err = math.radians(self.heading) - cmath.phase(z_curr) 
 	rospy.loginfo("theta_err = " + str(self.theta_err))
 
-    def movement(self, error): # Set the velocity of the robot
+    def movement(self, error): 
+	'''Sets robot's angular velocity based on error.
+	Deadzone and saturation implemented before publishing'''
         #deadzone
-        if abs(error) < .01 :
+        if abs(error) < .05 :
         	error = 0
         u = self.k*error
         if u > self.saturation :
