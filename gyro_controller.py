@@ -22,7 +22,7 @@ class Odo_msg:
 	self.saturation = 1
 
 
-    def sort(self, data):
+    def process(self, data):
 	'''Processes gyro's data.
 	Complex number is created from quaternion and angle is corrected'''
 	z = complex(data.pose.pose.orientation.w, data.pose.pose.orientation.z) #constructs complex number from quaternion
@@ -46,7 +46,7 @@ class Odo_msg:
 	self.pub.publish(self.msg) 
 	 
     def for_callback(self,data):
-	self.sort(data)
+	self.process(data)
         self.movement(self.theta_err)
 
 def call_back(odomsg):
